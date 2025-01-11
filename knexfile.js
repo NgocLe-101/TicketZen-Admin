@@ -13,10 +13,10 @@ const config = {
       ssl: false,
     },
     migrations: {
-      directory: "./src/migrations",
+      directory: "./dbs/migrations",
     },
     seeds: {
-      directory: "./src/seeds",
+      directory: "./dbs/seeds",
     },
   },
 
@@ -33,10 +33,10 @@ const config = {
       },
     },
     migrations: {
-      directory: "./src/migrations",
+      directory: "./dbs/migrations",
     },
     seeds: {
-      directory: "./src/seeds",
+      directory: "./dbs/seeds",
     },
   },
 };
