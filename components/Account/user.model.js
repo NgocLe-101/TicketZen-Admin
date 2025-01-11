@@ -329,6 +329,13 @@ const UserModel = {
       throw new Error(error.message);
     }
   },
+  updateUser: async (userId, newData) => {
+    try {
+      return await db("users").where({ id: userId }).update(newData);
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
 };
 
 export default UserModel;

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create New Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("product-form");
+        const title = document.getElementById("title");
+        const price = document.getElementById("price");
+        const description = document.getElementById("description");
+        const fileInput = document.getElementById("images");
+        const status = document.getElementById("status");
+        const errorBox = document.getElementById("error-box");
+
+        form.addEventListener("submit", (event) => {
+          let errors = [];
+
+          // Validate title
+          if (title.value.trim().length === 0) {
+            errors.push("Title is required.");
+          }
+
+          // Validate price
+          if (!price.value || parseFloat(price.value) <= 0) {
+            errors.push("Price must be a positive number.");
+          }
+
+          // Validate description
+          if (description.value.trim().length < 10) {
+            errors.push("Description must be at least 10 characters.");
+          }
+
+          // Validate images
+          if (fileInput.files.length === 0) {
+            errors.push("At least one image must be uploaded.");
+          }
+
+          // Validate status
+          if (!["available", "suspend"].includes(status.value)) {
+            errors.push("Invalid status selected.");
+          }
+
+          // Show errors or submit form
+          if (errors.length > 0) {
+            event.preventDefault();
+            showModal("Error", errors.join("<br>"));
+          } else {
+            errorBox.classList.add("hidden");
+          }
+        });
+      });
+    </script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+      <h1 class="text-2xl font-bold mb-6">Create New Product</h1>
+      <!-- Error Messages -->
+      <%- include('../partials/modal') %>
+
+      <form
+        id="product-form"
+        action="/products/create"
+        method="POST"
+        enctype="multipart/form-data"
+        class="bg-white shadow-lg rounded-lg p-6"
+      >
+        <!-- Title -->
+        <div class="mb-4">
+          <label for="title" class="block text-gray-700">Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="border rounded w-full px-3 py-2"
+            required
+          />
+        </div>
+
+        <!-- genre -->
+        <div class="mb-4">
+          <label for="genre" class="block text-gray-700">Genre</label>
+          <select
+            id="genre"
+            name="genre"
+            class="border rounded w-full px-3 py-2"
+            required
+          >
+            <% genres.forEach(genre => { %>
+            <option value="<%= genre.id %>"><%= genre.name %></option>
+            <% }); %>
+          </select>
+        </div>
+
+        <!-- Manufacturer -->
+        <div class="mb-4">
+          <label for="manufacturer" class="block text-gray-700"
+            >Manufacturer</label
+          >
+          <select
+            id="manufacturer"
+            name="manufacturer"
+            class="border rounded w-full px-3 py-2"
+            required
+          >
+            <% manufacturers.forEach(manufacturer => { %>
+            <option value="<%= manufacturer.id %>">
+              <%= manufacturer.name %>
+            </option>
+            <% }); %>
+          </select>
+        </div>
+
+        <!-- Price -->
+        <div class="mb-4">
+          <label for="price" class="block text-gray-700">Price</label>
+          <input
+            type="number"
+            id="price"
+            name="price"
+            min="1000"
+            class="border rounded w-full px-3 py-2"
+            step="1000"
+            required
+          />
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+          <label for="description" class="block text-gray-700"
+            >Description</label
+          >
+          <textarea
+            id="description"
+            name="description"
+            class="border rounded w-full px-3 py-2"
+            rows="5"
+            required
+          ></textarea>
+        </div>
+
+        <!-- Status -->
+        <div class="mb-4">
+          <label for="status" class="block text-gray-700">Status</label>
+          <select
+            id="status"
+            name="status"
+            class="border rounded w-full px-3 py-2"
+            required
+          >
+            <option value="available">Available</option>
+            <option value="suspend">Suspend</option>
+          </select>
+        </div>
+
+        <!-- Upload Images -->
+        <div class="mb-4">
+          <label for="images" class="block text-gray-700">Upload Images</label>
+          <input
+            type="file"
+            id="images"
+            name="images"
+            class="border rounded w-full px-3 py-2"
+            multiple
+            accept="image/*"
+            required
+          />
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg"
+        >
+          Create Product
+        </button>
+      </form>
+    </div>
+  </body>
+</html>

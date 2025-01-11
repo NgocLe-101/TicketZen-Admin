@@ -1,0 +1,207 @@
+import db from "../../dbs/init.db.js";
+import cloudinary from "../../config/cloudinary.config.js";
+class ProductModel {
+  async getAllProduct({
+    page,
+    limit,
+    search,
+    genre,
+    manufacturer,
+    sortBy,
+    order,
+  }) {
+    try {
+      const total = await db("products").count("* as count").first();
+      let query = db("products")
+        .leftJoin("manufacturers", "products.manufacturer", "manufacturers.id")
+        .join("genres", "products.genre", "genres.id")
+        .select(
+          "products.*",
+          "manufacturers.name as manufacturer",
+          "genres.name as genre"
+        )
+        .modify((queryBuilder) => {
+          if (search) {
+            queryBuilder.where("title", "ilike", `%${search}%`);
+          }
+          if (genre !== "all") {
+            queryBuilder.where("genre", genre);
+          }
+          if (manufacturer !== "all") {
+            queryBuilder.where("manufacturer", manufacturer);
+          }
+        });
+
+      const products = await query
+        .orderBy(sortBy, order)
+        .limit(limit)
+        .offset((page - 1) * limit);
+
+      const productImages = await db("product_images").select("*");
+      products.forEach((product) => {
+        product.images = productImages
+          .filter((image) => image.product_id === product.id)
+          .map((image) => ({
+            image_url: image.image_url,
+            public_id: image.public_id,
+          }));
+      });
+
+      return { items: products, total: parseInt(total.count) };
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async getAllGenres() {
+    try {
+      const genres = await db("genres").select("*");
+      return genres;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async getAllManufacturers() {
+    try {
+      const manufacturers = await db("manufacturers").select("*");
+      return manufacturers;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async addProduct({
+    title,
+    category,
+    manufacturer,
+    price,
+    description,
+    status,
+    images,
+  }) {
+    try {
+      const [product] = await db("products")
+        .insert({
+          title,
+          genre: category,
+          manufacturer,
+          price,
+          description,
+          status,
+        })
+        .returning("*");
+      if (images && images.length) {
+        const imageRecords = await Promise.all(
+          images.map(async (image) => {
+            const result = await cloudinary.uploader.upload(image, {
+              folder: "WAD/product_images",
+            });
+            return {
+              product_id: product.id,
+              image_url: result.secure_url,
+              public_id: result.public_id,
+            };
+          })
+        );
+        await db("product_images").insert(imageRecords);
+      }
+      return product;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async getProductById(id) {
+    try {
+      const product = await db("products")
+        .leftJoin("manufacturers", "products.manufacturer", "manufacturers.id")
+        .join("genres", "products.genre", "genres.id")
+        .select(
+          "products.*",
+          "manufacturers.name as manufacturer",
+          "genres.name as genre"
+        )
+        .where("products.id", id)
+        .first();
+
+      if (!product) {
+        return null;
+      }
+      const productImages = await db("product_images")
+        .where("product_id", id)
+        .select("*");
+      product.images = productImages.map((image) => {
+        return {
+          image_url: image.image_url,
+          public_id: image.public_id,
+        };
+      });
+      return product;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async removeImage(productId, photoId) {
+    try {
+      const image = await db("product_images")
+        .where("product_id", productId)
+        .andWhere("public_id", photoId)
+        .first();
+      if (!image) {
+        return null;
+      }
+      await db("product_images").where("public_id", photoId).del();
+      return image;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async deleteProduct(id) {
+    try {
+      await db("products").where("id", id).del();
+      return true;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async updateProduct({
+    id,
+    title,
+    category,
+    manufacturer,
+    price,
+    description,
+    status,
+    images,
+  }) {
+    try {
+      // patch the product
+      await db("products").where("id", id).update({
+        title,
+        genre: category,
+        manufacturer,
+        price,
+        description,
+        status,
+      });
+
+      if (images && images.length) {
+        const imageRecords = await Promise.all(
+          images.map(async (image) => {
+            const result = await cloudinary.uploader.upload(image, {
+              folder: "WAD/product_images",
+            });
+            return {
+              product_id: id,
+              image_url: result.secure_url,
+              public_id: result.public_id,
+            };
+          })
+        );
+        await db("product_images").insert(imageRecords);
+      }
+      return true;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+}
+
+export default new ProductModel();

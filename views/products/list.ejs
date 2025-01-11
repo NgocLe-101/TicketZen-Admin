@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Product List</h1>
+    <%- include('../partials/modal') %>
+    <!-- New Product Button -->
+  <div class="flex justify-end mb-4">
+    <a
+      href="/products/create"
+      class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+    >
+      + Create New Product
+    </a>
+  </div>
+    <!-- Filters -->
+    <div class="bg-white shadow-lg rounded-lg p-4 mb-6">
+      <form id="filter-form" class="flex gap-4">
+        <!-- Search by name -->
+        <input
+          type="text"
+          id="search"
+          name="search"
+          value="<%= filters.search %>"
+          placeholder="Search by name"
+          class="border rounded px-3 py-2 flex-1"
+        />
+
+        <!-- Filter by category -->
+        <select id="genre" name="genre" class="border rounded px-3 py-2">
+          <option value="all" <%= filters.genre === 'all' ? 'selected' : '' %>>All Genres</option>
+          <% genres.forEach(genre => { %>
+            <option value="<%= genre.id %>" <%= filters.genre === genre.id ? 'selected' : '' %>>
+              <%= genre.name %>
+            </option>
+          <% }); %>
+        </select>
+
+        <!-- Filter by manufacturer -->
+        <select id="manufacturer" name="manufacturer" class="border rounded px-3 py-2">
+          <option value="all" <%= filters.manufacturer === 'all' ? 'selected' : '' %>>All Manufacturers</option>
+          <% manufacturers.forEach(manufacturer => { %>
+            <option value="<%= manufacturer.id %>" <%= filters.manufacturer === manufacturer.id ? 'selected' : '' %>>
+              <%= manufacturer.name %>
+            </option>
+          <% }); %>
+        </select>
+
+        <!-- Sort by -->
+        <select id="sortBy" name="sortBy" class="border rounded px-3 py-2">
+          <option value="created_at" <%= filters.sortBy === 'created_at' ? 'selected' : '' %>>Creation Time</option>
+          <option value="price" <%= filters.sortBy === 'price' ? 'selected' : '' %>>Price</option>
+          <option value="total_purchase" <%= filters.sortBy === 'total_purchase' ? 'selected' : '' %>>Total Purchase</option>
+        </select>
+
+        <!-- Submit -->
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Filter</button>
+      </form>
+    </div>
+
+    <!-- Product List Table -->
+    <div id="product-list">
+      <table class="table-auto w-full bg-white shadow rounded-lg">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="px-4 py-2">Image</th>
+            <th class="px-4 py-2">Title</th>
+            <th class="px-4 py-2">Genres</th>
+            <th class="px-4 py-2">Manufacturer</th>
+            <th class="px-4 py-2">Price</th>
+            <th class="px-4 py-2">Date Created</th>
+            <th class="px-4 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% products.forEach(product => { %>
+            <tr class="border-b">
+              <td class="px-4 py-2">
+                <img src="<%= product.images[0] ? product.images[0].image_url : 'https://archive.org/download/placeholder-image/placeholder-image.jpg' %>" alt="<%= product.title %>" class="w-16 h-16 object-cover rounded-lg">
+              </td>
+              <td class="px-4 py-2"><%= product.title %></td>
+              <td class="px-4 py-2 text-center"><%= product.genre %></td>
+              <td class="px-4 py-2 text-center"><%= product.manufacturer %></td>
+              <td class="px-4 py-2 text-center"><%= product.price %>đ</td>
+              <td class="px-4 py-2 text-center"><%= new Date(product.created_at).toLocaleDateString() %></td>
+              <td class="px-4 py-2 text-center">
+                <a href="/products/<%= product.id %>" class="text-blue-500">
+                  <button class="bg-blue-500 text-white px-4 py-1 rounded">Edit</button>
+                </a>
+                <button class="bg-red-500 text-white px-4 py-1 rounded delete-btn" onclick="deleteProduct(<%= product.id %>)">Delete</button>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div id="pagination" class="flex justify-center mt-4">
+        <% for (let i = 1; i <= pagination.total; i++) { %>
+          <button
+            class="px-4 py-2 mx-1 <%= pagination.current == i ? 'bg-blue-500 text-white' : 'bg-gray-300' %>"
+            onclick="loadPage(<%= i %>)"
+          >
+            <%= i %>
+          </button>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('filter-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      fetchProducts();
+    });
+    async function deleteProduct(id) {
+      try {
+        const response = await axios.delete(`/products/${id}`);
+        if (response.status === 204) {
+          showModal('Success', 'Product deleted successfully');
+          fetchProducts();
+        }
+      } catch (error) {
+        showModal('Error', 'Failed to delete product');
+      }
+    }
+    async function fetchProducts(page = 1) {
+      const search = document.getElementById('search').value;
+      const genre = document.getElementById('genre').value;
+      const manufacturer = document.getElementById('manufacturer').value;
+      const sortBy = document.getElementById('sortBy').value;
+
+      try {
+        const response = await axios.get('/products', {
+          params: { page, search, genre, manufacturer, sortBy },
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        const productListBody = document.getElementById('product-list').querySelector('tbody');
+        productListBody.innerHTML = '';
+        response.data.data.forEach(product => {
+          productListBody.innerHTML += `
+            <tr class="border-b">
+              <td class="px-4 py-2">
+                <img src="${product.images[0] ? product.images[0].image_url : 'https://archive.org/download/placeholder-image/placeholder-image.jpg'}" alt="${product.title}" class="w-16 h-16 object-cover rounded-lg">
+              </td>
+              <td class="px-4 py-2">${product.title}</td>
+              <td class="px-4 py-2 text-center">${product.genre}</td>
+              <td class="px-4 py-2 text-center">${product.manufacturer || ""}</td>
+              <td class="px-4 py-2 text-center">${product.price}đ</td>
+              <td class="px-4 py-2 text-center">${new Date(product.created_at).toLocaleDateString()}</td>
+              <td class="px-4 py-2 text-center">
+                <a href="/products/${product.id}" class="text-blue-500">
+                  <button class="bg-blue-500 text-white px-4 py-1 rounded">Edit</button>
+                </a>
+                <button class="bg-red-500 text-white px-4 py-1 rounded delete-btn" onclick="deleteProduct(${product.id})">Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+        for (let i = 1; i <= response.data.pagination.total; i++) {
+          pagination.innerHTML += `
+            <button
+              class="px-4 py-2 mx-1 ${response.data.pagination.current == i ? 'bg-blue-500 text-white' : 'bg-gray-300'}"
+              onclick="loadPage(${i})"
+            >
+              ${i}
+            </button>
+          `;
+        }
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    }
+
+    function loadPage(page) {
+      fetchProducts(page);
+    }
+  </script>
+</body>
+</html>
