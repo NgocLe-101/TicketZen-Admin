@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex">
+    <!-- Sidebar -->
+    <aside class="bg-gray-800 text-white w-64 flex flex-col">
+      <div
+        class="p-4 text-center text-lg font-semibold border-b border-gray-700"
+      >
+        Admin Dashboard
+      </div>
+      <nav class="flex-1 p-4 space-y-2">
+        <a
+          href=""
+          class="<%= activePage === 'dashboard' ? 'bg-gray-700' : '' %> block px-4 py-2 rounded hover:bg-gray-700"
+          >Dashboard</a
+        >
+        <a
+          href="/accounts"
+          class="<%= activePage === 'accounts' ? 'bg-gray-700' : '' %> block px-4 py-2 rounded hover:bg-gray-700"
+          >Accounts</a
+        >
+        <a
+          href="/products"
+          class="<%= activePage === 'products' ? 'bg-gray-700' : '' %> block px-4 py-2 rounded hover:bg-gray-700"
+          >Products</a
+        >
+        <a
+          href="/reports"
+          class="<%= activePage === 'reports' ? 'bg-gray-700' : '' %> block px-4 py-2 rounded hover:bg-gray-700"
+          >Reports</a
+        >
+      </nav>
+      <div class="p-4 border-t border-gray-700">
+        <a
+          href="/logout"
+          class="block px-4 py-2 bg-red-600 text-center rounded hover:bg-red-700"
+        >
+          Logout
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+      <!-- Header -->
+      <header class="bg-white shadow p-4 flex justify-between items-center">
+        <h1 class="text-xl font-semibold">Welcome, <%= admin.username %>!</h1>
+        <div class="text-gray-600"><%= admin.email %></div>
+      </header>
+
+      <!-- Message Section -->
+      <% if (message) { %>
+      <div class="p-4">
+        <div
+          class="<%= message.type === 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' %> px-4 py-2 rounded shadow"
+        >
+          <%= message.text %>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Main Dashboard Content -->
+      <main class="p-6 flex-1 bg-gray-50">
+        <% if (activePage === 'dashboard') { %>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-2xl font-bold mb-4">Dashboard Overview</h2>
+          <p class="text-gray-600">Quick overview of the system stats.</p>
+        </div>
+        <% } else if (activePage === 'accounts') { %>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-2xl font-bold mb-4">Accounts</h2>
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr>
+                <th class="border-b-2 p-2">ID</th>
+                <th class="border-b-2 p-2">Name</th>
+                <th class="border-b-2 p-2">Email</th>
+                <th class="border-b-2 p-2">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% accounts.forEach(account => { %>
+              <tr>
+                <td class="border-b p-2"><%= account.id %></td>
+                <td class="border-b p-2"><%= account.name %></td>
+                <td class="border-b p-2"><%= account.email %></td>
+                <td class="border-b p-2"><%= account.status %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </main>
+    </div>
+  </body>
+</html>

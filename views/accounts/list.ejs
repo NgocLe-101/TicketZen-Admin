@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accounts</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-6">
+    <%- include('../partials/modal') %>
+    <h1 class="text-2xl font-bold mb-6">Accounts</h1>
+
+    <!-- Filters -->
+    <div class="flex items-center mb-4">
+      <input
+        type="text"
+        id="search"
+        value="<%= filters.search %>"
+        placeholder="Search by name or email"
+        class="border px-4 py-2 rounded-lg mr-4 w-1/3"
+      />
+      <select id="role" class="border px-4 py-2 rounded-lg mr-4">
+        <option value="all" <%= filters.role === 'all' ? 'selected' : '' %>>All</option>
+        <option value="admin" <%= filters.role === 'admin' ? 'selected' : '' %>>Admin</option>
+        <option value="customer" <%= filters.role === 'customer' ? 'selected' : '' %>>Customer</option>
+      </select>
+      <select id="sortBy" class="border px-4 py-2 rounded-lg mr-4">
+        <option value="created_at" <%= filters.sortBy === 'created_at' ? 'selected' : '' %>>Sort by Created At</option>
+        <option value="username" <%= filters.sortBy === 'username' ? 'selected' : '' %>>Sort by Username</option>
+        <option value="email" <%= filters.sortBy === 'email' ? 'selected' : '' %>>Sort by Email</option>
+      </select>
+      <select id="order" class="border px-4 py-2 rounded-lg">
+        <option value="asc" <%= filters.order === 'asc' ? 'selected' : '' %>>Ascending</option>
+        <option value="desc" <%= filters.order === 'desc' ? 'selected' : '' %>>Descending</option>
+      </select>
+      <button id="applyFilters" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-4">Apply</button>
+    </div>
+
+    <!-- Accounts Table -->
+    <table class="table-auto w-full bg-white shadow rounded-lg">
+      <thead>
+        <tr>
+          <th class="px-4 py-2">ID</th>
+          <th class="px-4 py-2">Username</th>
+          <th class="px-4 py-2">Email</th>
+          <th class="px-4 py-2">Role</th>
+          <th class="px-4 py-2">Status</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="accounts-table">
+        <% accounts.forEach(account => { %>
+          <tr>
+            <td class="border px-4 py-2"><%= account.id %></td>
+            <td class="border px-4 py-2"><%= account.username %></td>
+            <td class="border px-4 py-2"><%= account.email %></td>
+            <td class="border px-4 py-2"><%= account.role %></td>
+            <td class="border px-4 py-2"><%= account.status %></td>
+            <td class="border px-4 py-2">
+              <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewAccount('<%= account.id %>')">View</button>
+              <button class="bg-red-500 text-white px-4 py-1 rounded" onclick="toggleStatus('<%= account.id %>', '<%= account.status %>')">
+                <%= account.status === 'active' ? 'Ban' : 'Unban' %>
+              </button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div id="pagination" class="mt-4 flex justify-center">
+      <% for (let i = 1; i <= pagination.total; i++) { %>
+        <button
+          class="px-4 py-2 border <%= pagination.current == i ? 'bg-gray-300' : '' %>"
+          onclick="changePage(<%= i %>)"
+        >
+          <%= i %>
+        </button>
+      <% } %>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = <%= pagination.current %>;
+
+    // Fetch accounts data
+    async function fetchAccounts() {
+      const search = document.getElementById('search').value;
+      const role = document.getElementById('role').value;
+      const sortBy = document.getElementById('sortBy').value;
+      const order = document.getElementById('order').value;
+      const response = await axios.get('/accounts', {
+        params: { search, type: role, sortBy, order, page: currentPage },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+
+      if (response.data.success) {
+        renderAccounts(response.data.data);
+        renderPagination(response.data.pagination);
+      }
+    }
+
+    // Render accounts
+    function renderAccounts(accounts) {
+      const tableBody = document.getElementById('accounts-table');
+      tableBody.innerHTML = accounts
+        .map(
+          account => `
+            <tr>
+              <td class="border px-4 py-2">${account.id}</td>
+              <td class="border px-4 py-2">${account.username}</td>
+              <td class="border px-4 py-2">${account.email}</td>
+              <td class="border px-4 py-2">${account.role}</td>
+              <td class="border px-4 py-2">${account.status}</td>
+              <td class="border px-4 py-2">
+                <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewAccount('${account.id}')">View</button>
+                <button class="bg-red-500 text-white px-4 py-1 rounded" onclick="toggleStatus('${account.id}', '${account.status}')">
+                  ${account.status === 'active' ? 'Ban' : 'Unban'}
+                </button>
+              </td>
+            </tr>
+          `
+        )
+        .join('');
+    }
+
+    // Render pagination
+    function renderPagination({ current, total }) {
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = Array.from({ length: total }, (_, i) => i + 1)
+        .map(
+          page => `
+          <button
+            class="px-4 py-2 border ${page === current ? 'bg-gray-300' : ''}"
+            onclick="changePage(${page})"
+          >
+            ${page}
+          </button>
+        `
+        )
+        .join('');
+    }
+
+    // Change page
+    function changePage(page) {
+      currentPage = page;
+      fetchAccounts();
+    }
+
+    // View account details
+    function viewAccount(id) {
+      window.location.href = `/accounts/${id}`;
+    }
+
+    // Ban/Unban account
+    async function toggleStatus(id, currentStatus) {
+      const action = currentStatus === 'active' ? 'banned' : 'active';
+      try {
+        const response = await axios.post(`/accounts/${id}/ban`, {
+          _status: action
+        }, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (response.data.success) {
+          showModal('Success', response.data.message);
+          fetchAccounts();
+        } else {
+          showModal('Error', response.data.message);
+        }
+      } catch (error) {
+        showModal('Error', error.response.data.message);
+      }
+    }
+
+    // Apply filters
+    document.getElementById('applyFilters').addEventListener('click', () => {
+      currentPage = 1;
+      fetchAccounts();
+    });
+
+    // Initial fetch
+    fetchAccounts();
+  </script>
+</body>
+</html>

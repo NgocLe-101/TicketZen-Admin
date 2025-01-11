@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow">
+      <div
+        class="container mx-auto px-4 py-4 flex justify-between items-center"
+      >
+        <a href="/" class="text-xl font-bold text-gray-800">TicketZen</a>
+        <div class="flex space-x-4">
+          <a href="/" class="text-gray-700 hover:text-gray-900">Dashboard</a>
+          <a href="/accounts" class="text-gray-700 hover:text-gray-900"
+            >Accounts</a
+          >
+          <a href="/products" class="text-gray-700 hover:text-gray-900"
+            >Products</a
+          >
+          <a href="/reports" class="text-gray-700 hover:text-gray-900"
+            >Reports</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+      <h1 class="text-3xl font-bold mb-6 text-center">Account Details</h1>
+
+      <!-- Account Details Section -->
+      <div class="bg-white shadow-lg rounded-lg p-6">
+        <div class="mb-6">
+          <h2 class="text-2xl font-semibold mb-4">General Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <p><strong>ID:</strong> <%= account.id %></p>
+            <p><strong>Name:</strong> <%= account.username %></p>
+            <p><strong>Email:</strong> <%= account.email %></p>
+            <p><strong>Role:</strong> <%= account.role %></p>
+            <p><strong>Status:</strong> <%= account.status %></p>
+            <p><strong>Join From:</strong> <%= account.created_at %></p>
+          </div>
+        </div>
+
+        <!-- Action Buttons Section -->
+        <div class="flex space-x-4">
+          <form
+            action="/accounts/<%= account.id %>/ban"
+            method="POST"
+            class="flex space-x-2"
+            onsubmit="return confirm('Are you sure you want to <%= account.status === 'active' ? 'ban' : 'unban' %> this account?');"
+          >
+            <input
+              type="hidden"
+              name="_status"
+              value="<%= account.status === 'active' ? 'banned' : 'active' %>"
+            />
+            <button
+              type="submit"
+              class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md"
+              title="<%= account.status === 'Active' ? 'Ban this account' : 'Unban this account' %>"
+            >
+              <%= account.status === 'active' ? 'Ban Account' : 'Unban Account'
+              %>
+            </button>
+          </form>
+          <a
+            href="/accounts"
+            class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-md"
+            title="Back to Accounts"
+          >
+            Back to Accounts
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script></script>
+</html>
