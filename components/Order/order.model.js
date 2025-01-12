@@ -69,6 +69,15 @@ class OrderModel {
       throw new Error(err.message);
     }
   }
+
+  async updateOrderStatus(id, status) {
+    try {
+      await db("orders").where("id", id).update({ status });
+      return true;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
 }
 
 export default new OrderModel();

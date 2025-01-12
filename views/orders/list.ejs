@@ -52,7 +52,7 @@
             <td class="border px-4 py-2"><%= order.total_amount %></td>
             <td class="border px-4 py-2"><%= order.status %></td>
             <td class="border px-4 py-2">
-              <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewDetails('<%= order.id %>')">View</button>
+              <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewDetails('<%= order.id %>')">View Details</button>
               <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="editStatus('<%= order.id %>')">Edit Status</button>
             </td>
           </tr>
@@ -130,7 +130,7 @@
               <td class="border px-4 py-2">${order.total_amount}</td>
               <td class="border px-4 py-2">${order.status}</td>
               <td class="border px-4 py-2">
-                <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewDetails('${order.id}')">View</button>
+                <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewDetails('${order.id}')">View Details</button>
                 <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="editStatus('${order.id}')">Edit Status</button>
               </td>
             </tr>
@@ -168,20 +168,29 @@
     }
 
     // Handle status submit
-    function handleStatusSubmit(event) {
+    async function handleStatusSubmit(event) {
       event.preventDefault();
-      const status = document.getElementById('status').value;
+      const formData = new FormData(event.target);
+      const status = formData.get('status');
+      const orderId = formData.get('orderId');
       try {
         const response = await axios.patch(`/orders/${orderId}`, { status });
+        console.log(response);
         if (response.status === 200) {
           closeModal();
           fetchOrders();
+          showModal('Success', 'Status updated successfully');
         }
       } catch (error) {
+        console.error(error);
         alert('Failed to update status');
       }
       closeModal();
     }
+    function closeModal() {
+        document.getElementById('editStatus').classList.add('hidden');
+    }
+
     function editStatus(id) {
         document.getElementById('orderId').value = id;
         document.getElementById('editStatus').classList.remove('hidden');

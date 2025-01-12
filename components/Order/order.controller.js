@@ -78,7 +78,31 @@ async function getOrderDetails(req, res) {
   }
 }
 
+async function updateOrderStatus(req, res) {
+  const { id } = req.params;
+  const { status } = req.body;
+  console.log(id, status);
+  if (!status) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Status is required" });
+  }
+  if (["pending", "cancelled", "paid"].includes(status) === false) {
+    return res.status(400).json({ success: false, message: "Invalid status" });
+  }
+  try {
+    await OrderModel.updateOrderStatus(id, status);
+    res.status(200).json({ success: true, message: "Order status updated" });
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error updating order status" });
+  }
+}
+
 export default {
   getAllOrders,
   getOrderDetails,
+  updateOrderStatus,
 };
