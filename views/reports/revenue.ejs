@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Revenue Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Revenue Report</h1>
+
+    <!-- Time Range Filter -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+      <div class="flex gap-4">
+        <select id="timeRange" class="border rounded px-4 py-2" onchange="changeTimeRange()">
+          <option value="day" <%= range === 'day' ? 'selected' : '' %>>Last 24 Hours</option>
+          <option value="week" <%= range === 'week' ? 'selected' : '' %>>Last Week</option>
+          <option value="month" <%= range === 'month' ? 'selected' : '' %>>Last Month</option>
+          <option value="year" <%= range === 'year' ? 'selected' : '' %>>Last Year</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Revenue Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Total Revenue</h2>
+        <p class="text-3xl font-bold text-green-600">
+          <%= revenue.totalRevenue %>
+        </p>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Revenue Trend</h2>
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Movies -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold mb-4">Top Revenue Movies</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <% topMovies.forEach(movie => { %>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <img 
+              src="<%= movie.images[0]?.image_url || '/images/default-movie.png' %>" 
+              alt="<%= movie.title %>"
+              class="w-full h-48 object-cover rounded mb-2"
+            >
+            <h3 class="font-medium text-lg mb-1"><%= movie.title %></h3>
+            <p class="text-green-600 font-medium">
+              <%= movie.revenue %>
+            </p>
+            <p class="text-gray-600">
+              <%= movie.ticket_count %> tickets sold
+            </p>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Revenue Chart
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueData = <%- JSON.stringify(revenue.dailyRevenue) %>;
+    
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: revenueData.map(d => new Date(d.date).toLocaleDateString()),
+        datasets: [{
+          label: 'Daily Revenue',
+          data: revenueData.map(d => d.daily_total),
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Time range change handler
+    function changeTimeRange() {
+      const range = document.getElementById('timeRange').value;
+      window.location.href = `/reports?range=${range}`;
+    }
+  </script>
+</body>
+</html>
