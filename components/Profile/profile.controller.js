@@ -43,7 +43,7 @@ async function updateProfile(req, res) {
     }
     // verify the current password
     const admin = await UserModel.findUserByIdWithPassword(adminId);
-
+    console.log(admin);
     if (!admin) {
       return res
         .status(404)
@@ -69,7 +69,8 @@ async function updateProfile(req, res) {
     const newData = {
       username: username || admin.username,
       email: email || admin.email,
-      password: accountService.hashPassword(newPassword),
+      password:
+        (await accountService.hashPassword(newPassword)) || admin.password,
       avatar: avatar || admin.avatar || "",
     };
 
