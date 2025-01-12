@@ -57,7 +57,7 @@
       <!-- Header -->
       <header class="bg-white shadow p-4 flex justify-between items-center">
         <h1 class="text-xl font-semibold">Welcome, <%= admin.username %>!</h1>
-        <div class="text-gray-600"><%= admin.email %></div>
+        <a class="text-gray-600" href="/profile"><%= admin.email %></a>
       </header>
       <%- include('./partials/modal') %>
       <!-- Message Section -->

@@ -46,6 +46,7 @@
           <th class="px-4 py-2">Email</th>
           <th class="px-4 py-2">Role</th>
           <th class="px-4 py-2">Status</th>
+          <th class="px-4 py-2">Verified</th>
           <th class="px-4 py-2">Actions</th>
         </tr>
       </thead>
@@ -57,6 +58,7 @@
             <td class="border px-4 py-2"><%= account.email %></td>
             <td class="border px-4 py-2"><%= account.role %></td>
             <td class="border px-4 py-2"><%= account.status %></td>
+            <td class="border px-4 py-2"><%= account.state === 'verified' ? 'Yes' : 'No' %></td>
             <td class="border px-4 py-2">
               <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewAccount('<%= account.id %>')">View</button>
               <button class="bg-red-500 text-white px-4 py-1 rounded" onclick="toggleStatus('<%= account.id %>', '<%= account.status %>')">
@@ -113,6 +115,7 @@
               <td class="border px-4 py-2">${account.email}</td>
               <td class="border px-4 py-2">${account.role}</td>
               <td class="border px-4 py-2">${account.status}</td>
+              <td class="border px-4 py-2">${account.state === 'verified' ? 'Yes' : 'No'}</td>
               <td class="border px-4 py-2">
                 <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewAccount('${account.id}')">View</button>
                 <button class="bg-red-500 text-white px-4 py-1 rounded" onclick="toggleStatus('${account.id}', '${account.status}')">
