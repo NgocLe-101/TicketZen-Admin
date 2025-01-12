@@ -1,4 +1,8 @@
 import UserModel from "../Account/user.model.js";
+import accountService from "../Account/account.service.js";
+import cloudinary from "../../config/cloudinary.config.js";
+import fs from "fs";
+import bcrypt from "bcrypt";
 
 async function getProfile(req, res) {
   try {
@@ -10,8 +14,11 @@ async function getProfile(req, res) {
         .status(404)
         .json({ success: false, message: "Profile not found" });
     }
-    console.log(adminProfile);
-    res.render("profile", { admin: adminProfile });
+    res.render("dashboard", {
+      admin: adminProfile,
+      activePage: "profile",
+      message: null,
+    });
   } catch (err) {
     console.error("Error fetching profile:", err);
     res.status(500).json({ success: false, message: "Error fetching profile" });
@@ -19,41 +26,63 @@ async function getProfile(req, res) {
 }
 
 async function updateProfile(req, res) {
-  const { username, email, password } = req.body;
+  const { username, email, currentPassword, newPassword } = req.body;
+  const file = req.file;
   const adminId = req.user.id; // Get the logged-in admin's ID
-
   try {
-    // Validate the inputs
-    if (!username || !email) {
+    if (!currentPassword && newPassword) {
       return res
         .status(400)
-        .json({ success: false, message: "Name and email are required" });
+        .json({ success: false, message: "Current password is required" });
     }
 
-    // Find the admin by ID
-    const admin = await UserModel.findUserById(adminId);
+    if (currentPassword && !newPassword) {
+      return res
+        .status(400)
+        .json({ success: false, message: "New password is required" });
+    }
+    // verify the current password
+    const admin = await UserModel.findUserByIdWithPassword(adminId);
 
     if (!admin) {
       return res
         .status(404)
         .json({ success: false, message: "Admin not found" });
     }
-    const newData = {
-      ...admin,
-    };
-    // Update the admin profile
-    newData.username = username;
-    newData.email = email;
-
-    // If password is provided, hash it and update
-    if (password) {
-      newData.password = await bcrypt.hash(password, 10);
+    if (currentPassword && newPassword) {
+      if (
+        (await accountService.verifyPassword(currentPassword, admin)) === false
+      ) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid current password" });
+      }
     }
+
+    // Prepare the new data
+    let avatar;
+    if (file) {
+      const image = await cloudinary.uploader.upload(file.path);
+      avatar = image.secure_url;
+    }
+
+    const newData = {
+      username: username || admin.username,
+      email: email || admin.email,
+      password: accountService.hashPassword(newPassword),
+      avatar: avatar || admin.avatar || "",
+    };
 
     // Save the updated admin profile
     const response = await UserModel.updateUser(adminId, newData);
     console.log(response);
+    // Remove the uploaded image
+    if (file) {
+      fs.unlinkSync(file.path);
+    }
+
     // Return success response
+
     res.json({
       success: true,
       message: "Profile updated successfully",

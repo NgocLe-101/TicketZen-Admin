@@ -1,0 +1,198 @@
+
+
+  <div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Orders</h1>
+
+    <!-- Filters -->
+    <div class="flex items-center mb-4">
+      <input
+        type="text"
+        id="search"
+        value="<%= filters.search %>"
+        placeholder="Search by name or email"
+        class="border px-4 py-2 rounded-lg mr-4 w-1/3"
+      />
+      <select id="status" class="border px-4 py-2 rounded-lg mr-4">
+        <option value="all" <%= filters.status === 'all' ? 'selected' : '' %>>All</option>
+        <option value="paid" <%= filters.status === 'paid' ? 'selected' : '' %>>Paid</option>
+        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+      </select>
+      <select id="sortBy" class="border px-4 py-2 rounded-lg mr-4">
+        <option value="created_at" <%= filters.sortBy === 'created_at' ? 'selected' : '' %>>Sort by Created At</option>
+        <option value="id" <%= filters.sortBy === 'id' ? 'selected' : '' %>>Sort by ID</option>
+      </select>
+      <select id="order" class="border px-4 py-2 rounded-lg">
+        <option value="asc" <%= filters.order === 'asc' ? 'selected' : '' %>>Ascending</option>
+        <option value="desc" <%= filters.order === 'desc' ? 'selected' : '' %>>Descending</option>
+      </select>
+      <button id="applyFilters" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-4">Apply</button>
+    </div>
+
+    <!-- Accounts Table -->
+    <table class="table-auto w-full bg-white shadow rounded-lg">
+      <thead>
+        <tr>
+          <th class="px-4 py-2">ID</th>
+          <th class="px-4 py-2">Username</th>
+          <th class="px-4 py-2">Movie Title</th>
+          <th class="px-4 py-2">Created At</th>
+          <th class="px-4 py-2">Total Amount</th>
+          <th class="px-4 py-2">Status</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="orders-table">
+        <% orders.forEach(order => { %>
+          <tr>
+            <td class="border px-4 py-2"><%= order.id %></td>
+            <td class="border px-4 py-2"><%= order.username %></td>
+            <td class="border px-4 py-2"><%= order.movie_title %></td>
+            <td class="border px-4 py-2"><%= order.created_at %></td>
+            <td class="border px-4 py-2"><%= order.total_amount %></td>
+            <td class="border px-4 py-2"><%= order.status %></td>
+            <td class="border px-4 py-2">
+              <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewDetails('<%= order.id %>')">View</button>
+              <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="editStatus('<%= order.id %>')">Edit Status</button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div id="pagination" class="mt-4 flex justify-center">
+      <% for (let i = 1; i <= pagination.total; i++) { %>
+        <button
+          class="px-4 py-2 border <%= pagination.current == i ? 'bg-gray-300' : '' %>"
+          onclick="changePage(<%= i %>)"
+        >
+          <%= i %>
+        </button>
+      <% } %>
+    </div>
+  </div>
+
+  <div id="editStatus" class="fixed inset-0 bg-black bg-opacity-50 hidden">
+    <div class="flex items-center justify-center h-screen">
+      <div class="bg-white p-6 rounded-lg w-1/2">
+        <h2 id="modalTitle" class="text-xl font-bold mb-4">Edit Status</h2>
+        <form id="editStatusForm" onsubmit="handleStatusSubmit(event)">
+          <input type="hidden" name="orderId" id="orderId" />
+          <div class="mb-4">
+            <label>Status</label>
+            <select name="status" id="status" class="w-full border rounded px-3 py-2" required>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="paid">Paid</option>
+            </select>
+          </div>
+
+          <div class="flex justify-end gap-2">
+            <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = <%= pagination.current %>;
+    // Fetch accounts data
+    async function fetchOrders() {
+      const search = document.getElementById('search').value;
+      const status = document.getElementById('status').value;
+      const sortBy = document.getElementById('sortBy').value;
+      const order = document.getElementById('order').value;
+      const response = await axios.get('/orders', {
+        params: { search, status, sortBy, order, page: currentPage },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+
+      if (response.data.success) {
+        renderOrders(response.data.data);
+        renderPagination(response.data.pagination);
+      }
+    }
+
+    // Render accounts
+    function renderOrders(orders) {
+      const tableBody = document.getElementById('orders-table');
+      tableBody.innerHTML = orders
+        .map(
+          order => `
+            <tr>
+              <td class="border px-4 py-2">${order.id}</td>
+              <td class="border px-4 py-2">${order.username}</td>
+              <td class="border px-4 py-2">${order.movie_title}</td>
+              <td class="border px-4 py-2">${order.created_at}</td>
+              <td class="border px-4 py-2">${order.total_amount}</td>
+              <td class="border px-4 py-2">${order.status}</td>
+              <td class="border px-4 py-2">
+                <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="viewDetails('${order.id}')">View</button>
+                <button class="bg-blue-500 text-white px-4 py-1 rounded" onclick="editStatus('${order.id}')">Edit Status</button>
+              </td>
+            </tr>
+          `
+        )
+        .join('');
+    }
+
+    // Render pagination
+    function renderPagination({ current, total }) {
+      const pagination = document.getElementById('pagination');
+      pagination.innerHTML = Array.from({ length: total }, (_, i) => i + 1)
+        .map(
+          page => `
+          <button
+            class="px-4 py-2 border ${page === current ? 'bg-gray-300' : ''}"
+            onclick="changePage(${page})"
+          >
+            ${page}
+          </button>
+        `
+        )
+        .join('');
+    }
+
+    // Change page
+    function changePage(page) {
+      currentPage = page;
+      fetchOrders();
+    }
+
+    // View account details
+    function viewDetails(id) {
+      window.location.href = `/orders/${id}`;
+    }
+
+    // Handle status submit
+    function handleStatusSubmit(event) {
+      event.preventDefault();
+      const status = document.getElementById('status').value;
+      try {
+        const response = await axios.patch(`/orders/${orderId}`, { status });
+        if (response.status === 200) {
+          closeModal();
+          fetchOrders();
+        }
+      } catch (error) {
+        alert('Failed to update status');
+      }
+      closeModal();
+    }
+    function editStatus(id) {
+        document.getElementById('orderId').value = id;
+        document.getElementById('editStatus').classList.remove('hidden');
+    }
+    // Apply filters
+    document.getElementById('applyFilters').addEventListener('click', () => {
+      currentPage = 1;
+      fetchOrders();
+    });
+
+    // Initial fetch
+    fetchOrders();
+  </script>
+

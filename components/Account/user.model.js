@@ -78,6 +78,21 @@ const UserModel = {
       throw new Error(error.message);
     }
   },
+  findUserByIdWithPassword: async (id) => {
+    try {
+      const result = await db.raw(
+        `
+        SELECT id, username, email, state, role, avatar, created_at, updated_at, status, password
+        FROM users
+        WHERE id = ${id}
+        `
+      );
+      const user = result.rows[0];
+      return user;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  },
   getUser: async (id) => {
     try {
       const result = await db.raw(`SELECT * FROM users WHERE id = ?`, [id]); // Use parameterized query

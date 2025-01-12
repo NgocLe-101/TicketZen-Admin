@@ -7,96 +7,174 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   </head>
-  <body class="bg-gray-100">
-    <div class="container mx-auto p-6">
-      <h1 class="text-2xl font-bold mb-6">Update Your Profile</h1>
-
-      <!-- Profile Update Form -->
-      <div class="bg-white shadow-lg rounded-lg p-6">
-        <form id="profile-form" action="/profile" method="POST">
-          <!-- Name Field -->
-          <div class="mb-4">
-            <label for="name" class="block text-sm font-medium text-gray-700"
-              >Username</label
+  <div
+    class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12"
+  >
+    <div class="relative py-3 sm:max-w-xl sm:mx-auto w-1/3">
+      <div
+        class="relative px-4 py-10 bg-white mx-8 md:mx-0 shadow rounded-3xl sm:p-10"
+      >
+        <div class="max-w-lg mx-auto">
+          <div class="flex items-center space-x-5">
+            <div
+              class="block pl-2 font-semibold text-xl self-start text-gray-700"
             >
-            <input
-              type="text"
-              id="name"
-              name="username"
-              value="<%= admin.username %>"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-              required
-            />
+              <h2 class="leading-relaxed">Update Profile</h2>
+            </div>
           </div>
 
-          <!-- Email Field -->
-          <div class="mb-4">
-            <label for="email" class="block text-sm font-medium text-gray-700"
-              >Email</label
+          <form
+            action="/profile"
+            method="POST"
+            id="profile-form"
+            enctype="multipart/form-data"
+            class="divide-y divide-gray-200"
+          >
+            <!-- Avatar Section -->
+            <div
+              class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7"
             >
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value="<%= admin.email %>"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-              required
-            />
-          </div>
+              <div class="flex flex-col items-center space-y-4">
+                <div class="relative w-24 h-24">
+                  <img
+                    src="<%= admin.avatar || '/images/avatar_placeholder.png' %>"
+                    alt="Profile Avatar"
+                    id="avatar-preview"
+                    class="rounded-full w-full h-full object-cover border-2 border-gray-200"
+                  />
+                </div>
+                <div class="flex items-center space-x-4">
+                  <label class="block">
+                    <span class="sr-only">Choose profile photo</span>
+                    <input
+                      type="file"
+                      id="avatar-input"
+                      name="avatar"
+                      accept="image/*"
+                      class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
 
-          <!-- Password Field (optional) -->
-          <div class="mb-4">
-            <label
-              for="password"
-              class="block text-sm font-medium text-gray-700"
-              >New Password (optional)</label
+            <!-- User Information Section -->
+            <div
+              class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7"
             >
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Leave blank to keep current password"
-              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
-            />
-          </div>
+              <div class="flex flex-col">
+                <label class="leading-loose">Username</label>
+                <input
+                  type="text"
+                  name="username"
+                  value="<%= admin.username %>"
+                  class="px-4 py-2 border focus:ring-blue-500 focus:border-blue-500 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none"
+                />
+              </div>
 
-          <div class="flex justify-end">
-            <button
-              type="button"
-              class="text-blue-500 px-6 py-2 mr-2"
-              onclick="window.history.back()"
+              <div class="flex flex-col">
+                <label class="leading-loose">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value="<%= admin.email %>"
+                  class="px-4 py-2 border focus:ring-blue-500 focus:border-blue-500 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Password Section -->
+            <div
+              class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="bg-blue-500 text-white px-6 py-2 rounded-md"
-            >
-              Update Profile
-            </button>
-          </div>
-        </form>
+              <div class="flex flex-col">
+                <label class="leading-loose">Current Password</label>
+                <input
+                  type="password"
+                  name="currentPassword"
+                  class="px-4 py-2 border focus:ring-blue-500 focus:border-blue-500 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none"
+                />
+              </div>
+
+              <div class="flex flex-col">
+                <label class="leading-loose">New Password</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  class="px-4 py-2 border focus:ring-blue-500 focus:border-blue-500 w-full sm:text-sm border-gray-300 rounded-md focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Error Messages Section -->
+            <% if (locals.errors && errors.length > 0) { %>
+            <div class="py-4">
+              <% errors.forEach(function(error) { %>
+              <p class="text-red-500 text-sm"><%= error %></p>
+              <% }); %>
+            </div>
+            <% } %>
+
+            <!-- Submit Button Section -->
+            <div class="pt-4 flex items-center space-x-4">
+              <button
+                class="bg-blue-500 flex justify-center items-center w-full text-white px-4 py-3 rounded-md focus:outline-none hover:bg-blue-600 transition-colors"
+              >
+                Update Profile
+              </button>
+              <button
+                class="bg-red-500 flex justify-center items-center w-full text-white px-4 py-3 rounded-md focus:outline-none hover:bg-red-600 transition-colors"
+                onclick="window.history.back()"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
+  </div>
+  <script>
+    document.getElementById("avatar-input").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (!file.type.startsWith("image")) {
+          showModal("Error", "Please upload an image file");
+          e.target.value = "";
+          return;
+        }
+        const maxSize = 5 * 1024 * 1024; // 5 MB
+        if (file.size > maxSize) {
+          showModal("Error", "File size must be less than 5MB");
+          e.target.value = "";
+          return;
+        }
 
-    <script>
-      // Handle form submission and show feedback
-      document
-        .getElementById("profile-form")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          const formData = new FormData(e.target);
-
-          axios
-            .put("/profile", Object.fromEntries(formData))
-            .then((response) => {
-              console.log(response);
-              alert("Profile updated successfully!");
-            })
-            .catch((error) => {
-              alert("An error occurred. Please try again.");
-            });
-        });
-    </script>
-  </body>
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.querySelector("#avatar-preview").src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    const form = document.querySelector("form#profile-form");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      try {
+        const response = await axios.patch(form.action, formData);
+        console.log(response);
+        if (response.data.success) {
+          showModal("Success", "Profile updated successfully.");
+          setTimeout(() => {
+            window.location.href = "/profile";
+          }, 1000);
+        } else {
+          showModal("Error", response.data.message);
+        }
+      } catch (err) {
+        showModal("Error", err.response.data.message);
+      }
+    });
+  </script>
 </html>
