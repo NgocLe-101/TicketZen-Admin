@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Update <%= type === 'genre' ? 'Genre' : 'Manufacturer' %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("update-form");
+        form.addEventListener("submit", (event) => {
+          const nameInput = form.querySelector("input[name='name']");
+          if (!nameInput.value.trim()) {
+            event.preventDefault();
+            alert("Name cannot be empty.");
+          }
+        });
+      });
+    </script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+      <h1 class="text-2xl font-bold mb-6">
+        Update <%= type === 'genre' ? 'Genre' : 'Manufacturer' %>
+      </h1>
+
+      <form
+        id="update-form"
+        action="/categories/<%= type %>s/<%= item.id %>"
+        method="POST"
+        class="bg-white shadow-lg rounded-lg p-6"
+      >
+        <!-- Name Field -->
+        <div class="mb-4">
+          <label for="name" class="block text-gray-700 font-medium mb-2"
+            >Name</label
+          >
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="border rounded w-full px-3 py-2"
+            value="<%= item.name %>"
+            required
+          />
+        </div>
+
+        <% if (type === 'manufacturer') { %>
+        <!-- Country Field -->
+        <div class="mb-4">
+          <label for="country" class="block text-gray-700 font-medium mb-2"
+            >Country</label
+          >
+          <input
+            type="text"
+            id="country"
+            name="country"
+            class="border rounded w-full px-3 py-2"
+            value="<%= item.country || '' %>"
+          />
+        </div>
+
+        <!-- Contact Info Field -->
+        <div class="mb-4">
+          <label for="contact_info" class="block text-gray-700 font-medium mb-2"
+            >Contact Info</label
+          >
+          <textarea
+            id="contact_info"
+            name="contact_info"
+            class="border rounded w-full px-3 py-2"
+            rows="3"
+          >
+<%= item.contact_info || '' %></textarea
+          >
+        </div>
+        <% } %>
+
+        <button
+          type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg"
+        >
+          Save Changes
+        </button>
+        <a
+          href="/categories"
+          class="text-gray-500 px-4 py-2 border rounded-lg ml-4"
+        >
+          Cancel
+        </a>
+      </form>
+    </div>
+  </body>
+</html>

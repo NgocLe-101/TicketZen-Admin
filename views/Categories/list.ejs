@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Categories and Manufacturers</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const categoryForm = document.getElementById("genre-form");
+        const manufacturerForm = document.getElementById("manufacturer-form");
+        const deleteButtons = document.querySelectorAll(".delete-button");
+
+        // Handle deletion
+        deleteButtons.forEach((button) => {
+          button.addEventListener("click", async (event) => {
+            event.preventDefault();
+            const id = event.target.dataset.id;
+            const type = event.target.dataset.type; // 'category' or 'manufacturer'
+
+            if (confirm(`Are you sure you want to delete this ${type}?`)) {
+              try {
+                const response = await axios.delete(
+                  `/categories/${type}s/${id}`
+                );
+                console.log(response);
+                if (response.status === 200) {
+                  showModal("Success", "Category deleted successfully.");
+                  removeTableRow(id, type);
+                }
+              } catch (error) {
+                console.error(error);
+                showModal("Error", "An error occurred. Please try again.");
+              }
+            }
+          });
+        });
+        function removeTableRow(id, type) {
+          const tableRow = document.querySelector(
+            `tr[data-id="${id}"][data-type="${type}"]`
+          );
+          tableRow.remove();
+        }
+        // Client-side validation
+        [categoryForm, manufacturerForm].forEach((form) => {
+          form.addEventListener("submit", (event) => {
+            const nameInput = form.querySelector("input[name='name']");
+            if (!nameInput.value.trim()) {
+              event.preventDefault();
+              alert("Name is required.");
+            }
+          });
+        });
+      });
+    </script>
+  </head>
+  <body class="bg-gray-100">
+    <div class="container mx-auto p-6">
+      <h1 class="text-2xl font-bold mb-6">
+        Manage Categories and Manufacturers
+      </h1>
+
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Categories Management -->
+        <div>
+          <h2 class="text-xl font-semibold mb-4">Genres</h2>
+
+          <!-- Table of Genres -->
+          <table class="bg-white shadow-lg rounded-lg p-4 mb-6 w-full">
+            <thead>
+              <tr>
+                <th class="border-b py-2 text-left px-4">Name</th>
+                <th class="border-b py-2 text-center">Product Count</th>
+                <th class="border-b py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% genres.forEach((genre) => { %>
+              <tr data-id="<%= genre.id %>" data-type="genre">
+                <td class="border-b py-2 px-4"><%= genre.name %></td>
+                <td class="border-b py-2 text-center"><%= genre.count %></td>
+                <td class="border-b py-2">
+                  <a
+                    href="/categories/genres/<%= genre.id %>"
+                    class="text-blue-500 mr-4"
+                  >
+                    Edit
+                  </a>
+                  <button
+                    class="delete-button text-red-500"
+                    data-id="<%= genre.id %>"
+                    data-type="genre"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+
+          <!-- Add New Category -->
+          <form
+            id="genre-form"
+            action="/categories/genres"
+            method="POST"
+            class="bg-white shadow-lg rounded-lg p-4"
+          >
+            <h3 class="text-lg font-medium mb-2">Add New Genre</h3>
+            <div class="mb-4">
+              <label for="genre-name" class="block text-gray-700">Name</label>
+              <input
+                type="text"
+                id="genre-name"
+                name="name"
+                class="border rounded w-full px-3 py-2"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              class="bg-green-500 text-white px-4 py-2 rounded-lg"
+            >
+              Add Genre
+            </button>
+          </form>
+        </div>
+
+        <!-- Manufacturers Management -->
+        <div>
+          <h2 class="text-xl font-semibold mb-4">Manufacturers</h2>
+
+          <!-- Table of Manufacturers -->
+          <table class="bg-white shadow-lg rounded-lg p-4 mb-6 w-full">
+            <thead>
+              <tr>
+                <th class="border-b py-2 text-left px-4">Name</th>
+                <th class="border-b py-2 text-left">Country</th>
+                <th class="border-b py-2 text-left">Contact Info</th>
+                <th class="border-b py-2 text-center">Product Count</th>
+                <th class="border-b py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% manufacturers.forEach((manufacturer) => { %>
+              <tr data-id="<%= manufacturer.id %>" data-type="manufacturer">
+                <td class="px-4 border-b py-2"><%= manufacturer.name %></td>
+                <td class="border-b py-2"><%= manufacturer.country %></td>
+                <td class="border-b py-2"><%= manufacturer.contact_info %></td>
+                <td class="border-b py-2 text-center">
+                  <%= manufacturer.count %>
+                </td>
+                <td class="border-b py-2">
+                  <a
+                    href="/categories/manufacturers/<%= manufacturer.id %>"
+                    class="text-blue-500 mr-4"
+                  >
+                    Edit
+                  </a>
+                  <button
+                    class="delete-button text-red-500"
+                    data-id="<%= manufacturer.id %>"
+                    data-type="manufacturer"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+
+          <!-- Add New Manufacturer -->
+          <form
+            id="manufacturer-form"
+            action="/categories/manufacturers"
+            method="POST"
+            class="bg-white shadow-lg rounded-lg p-4"
+          >
+            <h3 class="text-lg font-medium mb-2">Add New Manufacturer</h3>
+            <div class="mb-4">
+              <label
+                for="manufacturer-name"
+                class="block text-gray-700 after:content-['*'] after:text-red-500"
+                >Name</label
+              >
+              <input
+                type="text"
+                id="manufacturer-name"
+                name="name"
+                class="border rounded w-full px-3 py-2"
+                required
+              />
+              <label
+                for="manufacturer-country"
+                class="block text-gray-700 after:content-['*'] after:text-red-500"
+                >Country</label
+              >
+              <input
+                type="text"
+                id="manufacturer-country"
+                name="country"
+                class="border rounded w-full px-3 py-2"
+                required
+              />
+              <label for="manufacturer-contact_info" class="block text-gray-700"
+                >Contact Info</label
+              >
+              <input
+                type="text"
+                id="manufacturer-contact_info"
+                name="contact_info"
+                class="border rounded w-full px-3 py-2"
+              />
+            </div>
+            <button
+              type="submit"
+              class="bg-green-500 text-white px-4 py-2 rounded-lg"
+            >
+              Add Manufacturer
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

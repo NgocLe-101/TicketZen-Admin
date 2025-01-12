@@ -202,6 +202,106 @@ class ProductModel {
       throw new Error(error.message);
     }
   }
+  async countProductsByGenres() {
+    try {
+      const counts = await db("products")
+        .select("genre")
+        .count("* as count")
+        .groupBy("genre");
+      return counts.reduce((acc, { genre, count }) => {
+        acc[genre] = count;
+        return acc;
+      }, {});
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async countProductsByManufacturers() {
+    try {
+      const counts = await db("products")
+        .select("manufacturer")
+        .count("* as count")
+        .groupBy("manufacturer");
+      return counts.reduce((acc, { manufacturer, count }) => {
+        acc[manufacturer] = count;
+        return acc;
+      }, {});
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async getGenre(id) {
+    try {
+      const genre = await db("genres").where("id", id).first();
+      return genre;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async addGenre(name) {
+    try {
+      const [genre] = await db("genres").insert({ name }).returning("*");
+      return genre;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async deleteGenre(id) {
+    try {
+      await db("genres").where("id", id).del();
+      return true;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async updateGenre(id, name) {
+    try {
+      await db("genres").where("id", id).update({ name });
+      return true;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async getManufacturer(id) {
+    try {
+      const manufacturer = await db("manufacturers").where("id", id).first();
+      return manufacturer;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async addManufacturer(name, country, contact_info = null) {
+    console.log(name, country, contact_info);
+    try {
+      const [manufacturer] = await db("manufacturers")
+        .insert({ name, country, contact_info })
+        .returning("*");
+      return manufacturer;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async deleteManufacturer(id) {
+    try {
+      await db("manufacturers").where("id", id).del();
+      return true;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async updateManufacturer(id, name, country, contact_info) {
+    try {
+      await db("manufacturers")
+        .where("id", id)
+        .update({ name, country, contact_info });
+      return true;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
 }
 
 export default new ProductModel();

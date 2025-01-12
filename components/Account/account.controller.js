@@ -35,7 +35,10 @@ class AccountController {
       }
 
       // Server-side rendering
-      res.render("accounts/list", {
+      res.render("dashboard", {
+        activePage: "accounts",
+        admin: req.user,
+        message: null,
         accounts: accounts.users,
         pagination: {
           current: page,

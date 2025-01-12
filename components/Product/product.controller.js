@@ -6,7 +6,7 @@ async function getProducts(req, res) {
   try {
     const {
       page = 1,
-      limit = 10,
+      limit = 5,
       search = "",
       genre = "all", // 'all' for no filter
       manufacturer = "all", // 'all' for no filter
@@ -42,7 +42,10 @@ async function getProducts(req, res) {
     }
     console.log(productData.map((product) => product.images));
     // Render EJS page for non-AJAX requests
-    res.render("products/list", {
+    res.render("dashboard", {
+      activePage: "products",
+      admin: req.user,
+      message: null,
       products: productData,
       genres,
       manufacturers,
