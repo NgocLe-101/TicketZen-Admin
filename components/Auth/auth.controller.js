@@ -26,7 +26,7 @@ const postLogin = (req, res, next) => {
 const postLogout = (req, res) => {
   req.logout((err) => {
     if (err) return next(err);
-    res.redirect("auth/login");
+    res.redirect("login");
   });
 };
 

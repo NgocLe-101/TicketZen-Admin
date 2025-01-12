@@ -6,56 +6,64 @@
     <title>Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-      <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
-        Login
-      </h1>
+  <body>
+    <div class="min-h-screen flex flex-col">
+      <%- include('../partials/navbar') %>
+      <main class="bg-gray-100 flex items-center justify-center flex-grow">
+        <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+          <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">
+            Login
+          </h1>
 
-      <!-- Display server-side error -->
-      <% if (errorMessage) { %>
-      <div class="mb-4 text-red-500 text-sm"><%= errorMessage %></div>
-      <% } %>
+          <!-- Display server-side error -->
+          <% if (errorMessage) { %>
+          <div class="mb-4 text-red-500 text-sm"><%= errorMessage %></div>
+          <% } %>
 
-      <form action="login" method="POST" class="space-y-4">
-        <!-- Email Input -->
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700"
-            >Email</label
-          >
-          <input
-            type="email"
-            id="email"
-            name="email"
-            class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300"
-            placeholder="Enter your email"
-            required
-          />
+          <form action="login" method="POST" class="space-y-4">
+            <!-- Email Input -->
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <!-- Password Input -->
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700"
+                >Password</label
+              >
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300"
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:outline-none text-sm font-medium"
+            >
+              Login
+            </button>
+          </form>
         </div>
-
-        <!-- Password Input -->
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700"
-            >Password</label
-          >
-          <input
-            type="password"
-            id="password"
-            name="password"
-            class="mt-1 block w-full px-4 py-2 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300"
-            placeholder="Enter your password"
-            required
-          />
-        </div>
-
-        <!-- Submit Button -->
-        <button
-          type="submit"
-          class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:outline-none text-sm font-medium"
-        >
-          Login
-        </button>
-      </form>
+      </main>
+      <%- include('../partials/footer') %>
     </div>
   </body>
 </html>

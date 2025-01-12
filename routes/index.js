@@ -18,14 +18,15 @@ router.use("/showtimes", showtimeRouter);
 router.use("/orders", orderRouter);
 router.use("/reports", reportRouter);
 router.use("/", (req, res) => {
-  res.render("dashboard", {
-    admin: req.user,
-    activePage: "404",
-    message: {
-      type: "error",
-      text: "Page not found",
-    },
-  });
+  if (req.user) {
+    res.render("dashboard", {
+      activePage: "dashboard",
+      admin: req.user,
+      message: null,
+    });
+  } else {
+    res.redirect("/auth/login");
+  }
 });
 
 export default router;

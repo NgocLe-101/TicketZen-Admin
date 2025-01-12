@@ -77,6 +77,10 @@ app.use(express.static(path.join(__dirname, "./public")));
 import indexRoutes from "./routes/index.js";
 app.use(indexRoutes);
 
+app.use((req, res) => {
+  res.render("404");
+});
+
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
 });

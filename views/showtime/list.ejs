@@ -64,12 +64,12 @@
             <td class="border px-4 py-2"><%= showtime.id %></td>
             <td class="border px-4 py-2"><%= showtime.movie_title %></td>
             <td class="border px-4 py-2"><%= showtime.screen_name %></td>
-            <td class="border px-4 py-2"><%= new Date(showtime.start_time).toLocaleString('vi-VN', { timeZone: 'UTC'}) %></td>
-            <td class="border px-4 py-2"><%= new Date(showtime.end_time).toLocaleString('vi-VN', { timeZone: 'UTC'})  %></td>
+            <td class="border px-4 py-2"><%= showtime.start_time %></td>
+            <td class="border px-4 py-2"><%= showtime.start_time  %></td>
             <td class="border px-4 py-2"><%= showtime.price %></td>
             <td class="border px-4 py-2 space-x-2">
               <button 
-                class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                 onclick="editShowtime(<%= showtime.id %>)"
               >
                 Edit
@@ -137,7 +137,7 @@
 
           <div class="mb-4">
             <label>Price</label>
-            <input type="number" name="price" id="price" class="w-full border rounded px-3 py-2" required>
+            <input type="number" name="price" id="price" class="w-full border rounded px-3 py-2 before:content-['đ']" required min="1000" step="1000">
           </div>
 
           <div class="flex justify-end gap-2">
@@ -216,12 +216,12 @@
               <td class="border px-4 py-2">${showtime.id}</td>
               <td class="border px-4 py-2">${showtime.movie_title}</td>
               <td class="border px-4 py-2">${showtime.screen_name}</td>
-              <td class="border px-4 py-2">${new Date(showtime.start_time).toLocaleString('vi-VN', {timeZone: 'UTC'})}</td>
-              <td class="border px-4 py-2">${new Date(showtime.end_time).toLocaleString('vi-VN', {timeZone: 'UTC'})}</td>
+              <td class="border px-4 py-2">${showtime.start_time}</td>
+              <td class="border px-4 py-2">${showtime.end_time}</td>
               <td class="border px-4 py-2">${showtime.price}</td>
               <td class="border px-4 py-2 space-x-2">
                 <button 
-                  class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                  class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                   onclick="editShowtime(${showtime.id})"
                 >
                   Edit

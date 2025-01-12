@@ -1,5 +1,6 @@
 import showtimeModel from "./showtime.model.js";
 import productModel from "../Product/product.model.js";
+import ValueConverter from "../../utils/Converter.js";
 async function getShowTimes(req, res) {
   try {
     const {
@@ -34,7 +35,12 @@ async function getShowTimes(req, res) {
     if (req.xhr) {
       return res.json({
         success: true,
-        data: showtimes.items,
+        data: showtimes.items.map((showtime) => ({
+          ...showtime,
+          start_time: ValueConverter.dateTimeConverter(showtime.start_time),
+          end_time: ValueConverter.dateTimeConverter(showtime.end_time),
+          price: ValueConverter.currencyConverter(showtime.price),
+        })),
         pagination: {
           current: parseInt(page),
           total: Math.ceil(showtimes.total / limit),
@@ -46,7 +52,12 @@ async function getShowTimes(req, res) {
       activePage: "showtimes",
       admin: req.user,
       message: null,
-      showtimes: showtimes.items,
+      showtimes: showtimes.items.map((showtime) => ({
+        ...showtime,
+        start_time: ValueConverter.dateTimeConverter(showtime.start_time),
+        end_time: ValueConverter.dateTimeConverter(showtime.end_time),
+        price: ValueConverter.currencyConverter(showtime.price),
+      })),
       screens,
       movies: movies.items,
       pagination: {

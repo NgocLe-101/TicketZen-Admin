@@ -43,7 +43,7 @@
         >
         <a
           href="/orders"
-          class="<%= activePage === 'showtimes' ? 'bg-gray-700' : '' %> block px-4 py-2 rounded hover:bg-gray-700"
+          class="<%= activePage === 'orders' ? 'bg-gray-700' : '' %> block px-4 py-2 rounded hover:bg-gray-700"
           >Orders</a
         >
         <a
@@ -52,14 +52,17 @@
           >Reports</a
         >
       </nav>
-      <div class="p-4 border-t border-gray-700">
-        <a
-          href="auth/logout"
-          class="block px-4 py-2 bg-red-600 text-center rounded hover:bg-red-700"
+      <form
+        class="p-4 border-t border-gray-700"
+        action="auth/logout"
+        method="POST"
+      >
+        <button
+          class="w-full px-4 py-2 bg-red-600 text-center rounded hover:bg-red-700"
         >
           Logout
-        </a>
-      </div>
+        </button>
+      </form>
     </aside>
 
     <!-- Main Content -->
