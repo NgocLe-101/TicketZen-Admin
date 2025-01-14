@@ -1,7 +1,7 @@
 import productModel from "./product.model.js";
 import fs from "fs";
 import cloudinary from "../../config/cloudinary.config.js";
-
+import ValueConverter from "../../utils/Converter.js";
 async function getProducts(req, res) {
   try {
     const {
@@ -27,7 +27,12 @@ async function getProducts(req, res) {
       productModel.getAllGenres(),
       productModel.getAllManufacturers(),
     ]);
-    const productData = products.items;
+    const productData = products.items.map((product) => {
+      return {
+        ...product,
+        price: ValueConverter.currencyConverter(product.price),
+      };
+    });
     const productTotal = products.total;
     if (req.xhr) {
       // Respond with JSON for AJAX requests
@@ -64,16 +69,31 @@ async function getProducts(req, res) {
 }
 
 async function getAddProductPage(req, res) {
-  const [genres, manufacturers] = await Promise.all([
+  const [genres, manufacturers, languages, age_ratings] = await Promise.all([
     productModel.getAllGenres(),
     productModel.getAllManufacturers(),
+    productModel.getAllLanguages(),
+    productModel.getAllAgeRatings(),
   ]);
-  res.render("products/add", { genres, manufacturers });
+  res.render("products/add", { genres, manufacturers, languages, age_ratings });
 }
 
 async function addProduct(req, res) {
   try {
-    const { title, genre, manufacturer, price, description, status } = req.body;
+    const {
+      title,
+      genre,
+      manufacturer,
+      price,
+      description,
+      status,
+      language,
+      age_rating,
+      release_date,
+      trailer,
+      rating,
+      duration,
+    } = req.body;
 
     // Validate required fields
     if (
@@ -82,7 +102,13 @@ async function addProduct(req, res) {
       !manufacturer ||
       !price ||
       !description ||
-      !status
+      !status ||
+      !language ||
+      !age_rating ||
+      !release_date ||
+      !trailer ||
+      !rating ||
+      !duration
     ) {
       return res
         .status(400)
@@ -105,6 +131,12 @@ async function addProduct(req, res) {
       description,
       status,
       images,
+      language,
+      age_rating,
+      release_date,
+      trailer,
+      rating,
+      duration,
     };
     const newProduct = await productModel.addProduct(product);
 
@@ -129,11 +161,20 @@ async function getProductDetails(req, res) {
         .status(404)
         .json({ success: false, message: "Product not found" });
     }
-    const [genres, manufacturers] = await Promise.all([
+    console.log(product);
+    const [genres, manufacturers, languages, age_ratings] = await Promise.all([
       productModel.getAllGenres(),
       productModel.getAllManufacturers(),
+      productModel.getAllLanguages(),
+      productModel.getAllAgeRatings(),
     ]);
-    res.render("products/edit", { product, genres, manufacturers });
+    res.render("products/edit", {
+      product,
+      genres,
+      manufacturers,
+      languages,
+      age_ratings,
+    });
   } catch (error) {
     console.error("Error fetching product details:", error);
     res
@@ -144,18 +185,22 @@ async function getProductDetails(req, res) {
 
 async function removeImage(req, res) {
   try {
-    const { photoId, productId } = req.body;
-    console.log(photoId, productId);
-    const image = await productModel.removeImage(productId, photoId);
-    console.log(image);
+    const { id } = req.params;
+    const { photoId } = req.body;
+    console.log(photoId);
+    const image = await productModel.removeImage(id, photoId);
     if (!image) {
       return res
         .status(404)
         .json({ success: false, message: "Image not found" });
     }
     // Remove image from cloudinary
-    await cloudinary.uploader.destroy(image.public_id);
-    res.json({ success: true, message: "Image removed successfully" });
+    if (image.public_id) {
+      await cloudinary.uploader.destroy(image.public_id);
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "Image removed successfully" });
   } catch (error) {
     console.error("Error removing image:", error);
     res.status(500).json({ success: false, message: "Error removing image" });

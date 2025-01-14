@@ -8,10 +8,10 @@ router.delete("/:id", productController.deleteProduct);
 router.get("/create", productController.getAddProductPage);
 router.post("/create", upload.array("images", 5), productController.addProduct);
 router.get("/:id", productController.getProductDetails);
+router.post("/:id/remove-image", productController.removeImage);
 router.post(
   "/:id",
   upload.array("newImages", 5),
   productController.updateProduct
 );
-router.post("/remove-image", productController.removeImage);
 export default router;

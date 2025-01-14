@@ -68,6 +68,22 @@ class ProductModel {
       throw new Error(error.message);
     }
   }
+  async getAllLanguages() {
+    try {
+      const languages = await db("languages").select("*");
+      return languages;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
+  async getAllAgeRatings() {
+    try {
+      const ageRatings = await db("age_ratings").select("*");
+      return ageRatings;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
   async addProduct({
     title,
     category,
@@ -76,6 +92,12 @@ class ProductModel {
     description,
     status,
     images,
+    language,
+    age_rating,
+    release_date,
+    trailer,
+    rating,
+    duration,
   }) {
     try {
       const [product] = await db("products")
@@ -86,6 +108,12 @@ class ProductModel {
           price,
           description,
           status,
+          language,
+          age_rating,
+          release_date,
+          trailer,
+          rating,
+          duration,
         })
         .returning("*");
       if (images && images.length) {
@@ -102,6 +130,9 @@ class ProductModel {
           })
         );
         await db("product_images").insert(imageRecords);
+        await db("products").where("id", product.id).update({
+          poster: imageRecords[0].image_url,
+        });
       }
       return product;
     } catch (error) {

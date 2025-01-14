@@ -1,176 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Update Product</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("product-form");
-      const title = document.getElementById("title");
-      const price = document.getElementById("price");
-      const description = document.getElementById("description");
-      const fileInput = document.getElementById("new-images");
-      const status = document.getElementById("status");
-      const deleteButtons = document.querySelectorAll(".delete-photo");
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Product</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script defer>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("product-form");
+        const title = document.getElementById("title");
+        const price = document.getElementById("price");
+        const description = document.getElementById("description");
+        const status = document.getElementById("status");
+        const errorBox = document.getElementById("error-box");
 
-      // Validate input on form submit
-      form.addEventListener("submit", (event) => {
-        let errors = [];
+        form.addEventListener("submit", (event) => {
+          let errors = [];
 
-        // Validate title
-        if (title.value.trim().length === 0) {
-          errors.push("Title is required.");
-        }
+          if (title.value.trim().length === 0) {
+            errors.push("Title is required.");
+          }
 
-        // Validate price
-        if (!price.value || parseFloat(price.value) <= 0) {
-          errors.push("Price must be a positive number.");
-        }
+          if (!price.value || parseFloat(price.value) <= 0) {
+            errors.push("Price must be a positive number.");
+          }
 
-        // Validate description
-        if (description.value.trim().length < 10) {
-          errors.push("Description must be at least 10 characters.");
-        }
+          if (description.value.trim().length < 10) {
+            errors.push("Description must be at least 10 characters.");
+          }
 
-        // Validate new images
-        if (fileInput.files.length > 0 && fileInput.files.length > 5) {
-          errors.push("You can upload up to 5 images.");
-        }
+          if (!["available", "suspend"].includes(status.value)) {
+            errors.push("Invalid status selected.");
+          }
 
-        // Validate status
-        if (!["available", "suspend"].includes(status.value)) {
-          errors.push("Invalid status selected.");
-        }
-
-        // Show errors or submit form
-        if (errors.length > 0) {
-          event.preventDefault();
-          showModal("Error", errors.join("<br>"));
-        }
-      });
-
-      // Remove photo logic
-      deleteButtons.forEach((button) => {
-        button.addEventListener("click", async (event) => {
-          event.preventDefault();
-          const photoId = event.target.dataset.id;
-          const productId = event.target.dataset.productId;
-          try {
-              const response = await axios.post('/products/remove-image', { photoId, productId: productId }, {
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              });
-                if (response.data.success) {
-                    event.target.closest('.photo-item').remove();
-                } else {
-                    showModal('Error', response.data.message);
-                }
-          } catch (error) {
-              showModal('Error', error.response.data.message);
+          if (errors.length > 0) {
+            event.preventDefault();
+            showModal("Error", errors.join("<br>"));
+          } else {
+            errorBox.classList.add("hidden");
           }
         });
+        const removePhotoButtons = document.querySelectorAll(".delete-photo");
+        console.log(removePhotoButtons);
+        removePhotoButtons.forEach((button) => {
+          button.addEventListener("click", async () => {
+            const productId = button.getAttribute("data-product-id");
+            const publicId = button.getAttribute("data-id");
+
+            try {
+              const response = await axios.post(`/products/${productId}/remove-image`, {
+                photoId: publicId,
+              });
+              if (response.status === 200) {
+                button.parentElement.remove();
+              }
+            } catch (error) {
+              console.error(error);
+              showModal("Error", "Failed to remove photo");
+            }
+          });
+        });
       });
-    });
-  </script>
+    </script>
 </head>
 <body class="bg-gray-100">
-  <div class="container mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">Update Product</h1>
-    <%- include('../partials/modal') %>
-    <!-- Error Messages -->
+    <div class="container mx-auto p-6">
+        <h1 class="text-2xl font-bold mb-6">Edit Product</h1>
+        <%- include('../partials/modal') %>
 
-    <form
-      id="product-form"
-      action="/products/<%= product.id %>"
-      method="POST"
-      enctype="multipart/form-data"
-      class="bg-white shadow-lg rounded-lg p-6"
-    >
-      <!-- Title -->
-      <div class="mb-4">
-        <label for="title" class="block text-gray-700">Title</label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value="<%= product.title %>"
-          class="border rounded w-full px-3 py-2"
-          required
-        />
-      </div>
+        <form id="product-form" action="/products/<%= product.id %>" method="POST" enctype="multipart/form-data" class="bg-white shadow-lg rounded-lg p-6">
+            <!-- Title -->
+            <div class="mb-4">
+                <label for="title" class="block text-gray-700">Title</label>
+                <input type="text" id="title" name="title" value="<%= product.title %>" class="border rounded w-full px-3 py-2" required />
+            </div>
 
-      <!-- Category -->
-      <div class="mb-4">
-        <label for="genre" class="block text-gray-700">Genre</label>
-        <select id="genre" name="genre" class="border rounded w-full px-3 py-2" required>
-          <% genres.forEach(genre => { %>
-            <option value="<%= genre.id %>" <%= genre.name == product.genre ? 'selected' : '' %>>
-              <%= genre.name %>
-            </option>
-          <% }); %>
-        </select>
-      </div>
+            <!-- Categories -->
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold">Categories</label>
+                <div class="flex gap-4">
+                    <div>
+                        <label for="genre" class="block text-gray-700">Genre</label>
+                        <select id="genre" name="genre" class="border rounded w-full px-3 py-2" required>
+                            <% genres.forEach(genre => { %>
+                                <option value="<%= genre.id %>" <%= product.genre === genre.name ? 'selected' : '' %>><%= genre.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="manufacturer" class="block text-gray-700">Manufacturer</label>
+                        <select id="manufacturer" name="manufacturer" class="border rounded w-full px-3 py-2" required>
+                            <% manufacturers.forEach(manufacturer => { %>
+                                <option value="<%= manufacturer.id %>" <%= product.manufacturer === manufacturer.name ? 'selected' : '' %>><%= manufacturer.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="language" class="block text-gray-700">Language</label>
+                        <select id="language" name="language" class="border rounded w-full px-3 py-2" required>
+                            <% languages.forEach(language => { %>
+                                <option value="<%= language.id %>" <%= product.language === language.name ? 'selected' : '' %>><%= language.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="age-rating" class="block text-gray-700">Age Rating</label>
+                        <select id="age-rating" name="age_rating" class="border rounded w-full px-3 py-2" required>
+                            <% age_ratings.forEach(age_rating => { %>
+                                <option value="<%= age_rating.id %>" <%= product.age_rating === age_rating.name ? 'selected' : '' %>><%= age_rating.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-      <!-- Manufacturer -->
-      <div class="mb-4">
-        <label for="manufacturer" class="block text-gray-700">Manufacturer</label>
-        <select id="manufacturer" name="manufacturer" class="border rounded w-full px-3 py-2" required>
-          <% manufacturers.forEach(manufacturer => { %>
-            <option value="<%= manufacturer.id %>" <%= manufacturer.name == product.manufacturer ? 'selected' : '' %>>
-              <%= manufacturer.name %>
-            </option>
-          <% }); %>
-        </select>
-      </div>
+            <!-- Rating -->
+            <div class="mb-4">
+                <label for="rating" class="block text-gray-700">Rating</label>
+                <input type="number" id="rating" name="rating" min="1" max="10" step="0.1" value="<%= product.rating %>" class="border rounded w-full px-3 py-2" required />
+            </div>
 
-      <!-- Price -->
-      <div class="mb-4">
-        <label for="price" class="block text-gray-700">Price</label>
-        <input
-          type="number"
-          id="price"
-          name="price"
-          min="1000"
-          value="<%= product.price %>"
-          class="border rounded w-full px-3 py-2"
-          step="1000"
-          required
-        />
-      </div>
+            <!-- Release Date -->
+            <div class="mb-4">
+                <label for="release_date" class="block text-gray-700">Release Date</label>
+                <input type="date" id="release_date" name="release_date" value="<%= new Date(product.release_date).toISOString().slice(0, 16) %>" class="border rounded w-full px-3 py-2" required />
+            </div>
 
-      <!-- Description -->
-      <div class="mb-4">
-        <label for="description" class="block text-gray-700">Description</label>
-        <textarea
-          id="description"
-          name="description"
-          class="border rounded w-full px-3 py-2"
-          rows="5"
-          required
-        ><%= product.description %></textarea>
-      </div>
+            <!-- Duration -->
+            <div class="mb-4">
+                <label for="duration" class="block text-gray-700">Duration</label>
+                <input type="number" id="duration" name="duration" min="1" value="<%= product.duration %>" class="border rounded w-full px-3 py-2" required />
+            </div>
 
-      <!-- Status -->
-      <div class="mb-4">
-        <label for="status" class="block text-gray-700">Status</label>
-        <select id="status" name="status" class="border rounded w-full px-3 py-2" required>
-          <option value="available" <%= product.status === 'available' ? 'selected' : '' %>>Available</option>
-          <option value="suspend" <%= product.status === 'suspend' ? 'selected' : '' %>>Suspend</option>
-        </select>
-      </div>
+            <!-- Trailer -->
+            <div class="mb-4">
+                <label for="trailer" class="block text-gray-700">Trailer</label>
+                <input type="url" id="trailer" name="trailer" value="<%= product.trailer %>" class="border rounded w-full px-3 py-2" required />
+            </div>
 
-      <!-- Existing Photos -->
-      <div class="mb-4">
+            <!-- Price -->
+            <div class="mb-4">
+                <label for="price" class="block text-gray-700">Price</label>
+                <input type="number" id="price" name="price" min="1000" value="<%= product.price %>" class="border rounded w-full px-3 py-2" step="1000" required />
+            </div>
+
+            <!-- Description -->
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700">Description</label>
+                <textarea id="description" name="description" class="border rounded w-full px-3 py-2" rows="5" required><%= product.description %></textarea>
+            </div>
+
+            <!-- Status -->
+            <div class="mb-4">
+                <label for="status" class="block text-gray-700">Status</label>
+                <select id="status" name="status" class="border rounded w-full px-3 py-2" required>
+                    <option value="available" <%= product.status === 'available' ? 'selected' : '' %>>Available</option>
+                    <option value="suspend" <%= product.status === 'suspend' ? 'selected' : '' %>>Suspend</option>
+                </select>
+            </div>
+
+            <!-- Upload Images -->
+            <div class="mb-4">
         <label class="block text-gray-700">Existing Photos</label>
         <div class="grid grid-cols-3 gap-4">
           <% product.images.forEach((image) => { %>
             <div class="photo-item">
               <img src="<%= image.image_url %>" class="w-full h-32 object-cover rounded mb-2">
               <button
+                type="button"
                 class="delete-photo bg-red-500 text-white px-2 py-1 rounded"
                 data-id="<%= image.public_id %>" data-product-id="<%= product.id %>"
               >
@@ -194,17 +192,14 @@
         />
       </div>
 
-      <!-- Submit Button -->
-       <div class="flex items-center">
-         <button
-           type="submit"
-           class="bg-blue-500 text-white px-4 py-2 rounded-lg"
-         >
-           Update Product
-         </button>
-          <a href="/products" class="text-gray-500 px-4 py-2 border rounded-lg ml-4">Cancel</a>
-       </div>
-    </form>
-  </div>
+            <!-- Submit Buttons -->
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">
+                Update Product
+            </button>
+            <button type="button" onclick="window.history.back()" class="bg-gray-500 text-white px-4 py-2 rounded-lg ml-4">
+                Cancel
+            </button>
+        </form>
+    </div>
 </body>
 </html>
