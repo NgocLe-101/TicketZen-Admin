@@ -228,7 +228,20 @@ async function deleteProduct(req, res) {
 async function updateProduct(req, res) {
   try {
     const { id } = req.params;
-    const { title, genre, manufacturer, price, description, status } = req.body;
+    const {
+      title,
+      genre,
+      manufacturer,
+      price,
+      description,
+      status,
+      language,
+      age_rating,
+      release_date,
+      trailer,
+      rating,
+      duration,
+    } = req.body;
     const product = {
       id,
       title,
@@ -237,6 +250,12 @@ async function updateProduct(req, res) {
       price,
       description,
       status,
+      language,
+      age_rating,
+      release_date,
+      trailer,
+      rating,
+      duration,
     };
 
     if (req.files && req.files.length > 0) {

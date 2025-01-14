@@ -201,6 +201,12 @@ class ProductModel {
     description,
     status,
     images,
+    language,
+    age_rating,
+    release_date,
+    trailer,
+    rating,
+    duration,
   }) {
     try {
       // patch the product
@@ -211,6 +217,12 @@ class ProductModel {
         price,
         description,
         status,
+        language,
+        age_rating,
+        release_date,
+        trailer,
+        rating,
+        duration,
       });
 
       if (images && images.length) {

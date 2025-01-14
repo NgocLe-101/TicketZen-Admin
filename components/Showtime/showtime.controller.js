@@ -102,6 +102,7 @@ async function updateShowTime(req, res) {
   try {
     const { id } = req.params;
     const { movie_id, screen_id, start_time, end_time, price } = req.body;
+    console.log(req.body);
     if (!movie_id || !screen_id || !start_time || !end_time || !price) {
       return res
         .status(400)
