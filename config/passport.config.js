@@ -23,6 +23,11 @@ export default function (passport) {
           if (!passwordMatch) {
             return done(null, false, { message: "Incorrect password." });
           }
+          if (user.role !== "admin") {
+            return done(null, false, {
+              message: "You do not have permission to access this page",
+            });
+          }
           return done(null, user);
         } catch (error) {
           return done(error);
