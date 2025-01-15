@@ -2,6 +2,7 @@ import db from "../../dbs/init.db.js";
 import path from "path";
 import cloudinary from "../../config/cloudinary.config.js";
 import sharp from "sharp";
+import fs from "fs";
 
 class ProductModel {
   async getAllProduct({
