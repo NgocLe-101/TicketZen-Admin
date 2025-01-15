@@ -3,6 +3,8 @@ import accountService from "../Account/account.service.js";
 import cloudinary from "../../config/cloudinary.config.js";
 import fs from "fs";
 import bcrypt from "bcrypt";
+import path from "path";
+import sharp from "sharp";
 
 async function getProfile(req, res) {
   try {
@@ -64,6 +66,8 @@ async function updateProfile(req, res) {
     // Prepare the new data
     let avatar;
     if (file) {
+      // compress and upload the image to cloudinary
+
       const image = await cloudinary.uploader.upload(file.path);
       avatar = image.secure_url;
     }

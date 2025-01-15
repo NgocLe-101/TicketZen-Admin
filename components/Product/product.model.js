@@ -1,5 +1,8 @@
 import db from "../../dbs/init.db.js";
+import path from "path";
 import cloudinary from "../../config/cloudinary.config.js";
+import sharp from "sharp";
+
 class ProductModel {
   async getAllProduct({
     page,
@@ -228,9 +231,23 @@ class ProductModel {
       if (images && images.length) {
         const imageRecords = await Promise.all(
           images.map(async (image) => {
-            const result = await cloudinary.uploader.upload(image, {
-              folder: "WAD/product_images",
-            });
+            // compress the image to reduce the size here
+            const fullPath = path.resolve(image);
+
+            const compressedImagePath = `${fullPath}-compressed.jpeg`;
+            await sharp(fullPath)
+              .resize({ width: 800 }) // Resize ảnh
+              .toFormat("jpeg") // Chuyển đổi sang định dạng JPEG
+              .jpeg({ quality: 80 }) // Nén ảnh
+              .toFile(compressedImagePath); // Lưu ảnh đã nén vào file tạm
+            const result = await cloudinary.uploader.upload(
+              compressedImagePath,
+              {
+                folder: "WAD/product_images",
+              }
+            );
+            fs.unlinkSync(compressedImagePath);
+
             return {
               product_id: id,
               image_url: result.secure_url,
