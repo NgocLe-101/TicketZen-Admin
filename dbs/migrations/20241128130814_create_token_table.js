@@ -2,7 +2,7 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function (knex) {
+export function up(knex) {
   return knex.schema.createTable("verification_tokens", (table) => {
     table.increments("id").primary();
     table.integer("user_id").unsigned().notNullable();
@@ -10,12 +10,12 @@ exports.up = function (knex) {
     table.timestamp("expires").notNullable();
     table.foreign("user_id").references("users.id").onDelete("CASCADE");
   });
-};
+}
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function (knex) {
+export function down(knex) {
   return knex.schema.dropTable("verification_tokens");
-};
+}

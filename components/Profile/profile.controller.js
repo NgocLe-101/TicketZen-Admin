@@ -43,16 +43,18 @@ async function updateProfile(req, res) {
     }
     // verify the current password
     const admin = await UserModel.findUserByIdWithPassword(adminId);
-    console.log(admin);
+    console.log(await accountService.hashPassword("123456789"));
     if (!admin) {
       return res
         .status(404)
         .json({ success: false, message: "Admin not found" });
     }
     if (currentPassword && newPassword) {
-      if (
-        (await accountService.verifyPassword(currentPassword, admin)) === false
-      ) {
+      const passwordMatch = await accountService.verifyPassword(
+        currentPassword,
+        admin
+      );
+      if (!passwordMatch) {
         return res
           .status(400)
           .json({ success: false, message: "Invalid current password" });

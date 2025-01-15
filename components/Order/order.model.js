@@ -17,6 +17,7 @@ class OrderModel {
         .leftJoin("showtimes", "tickets.showtime_id", "showtimes.id")
         .leftJoin("products", "showtimes.movie_id", "products.id")
         .select("orders.*", "users.username", "products.title as movie_title")
+        .groupBy("orders.id", "users.username", "products.title")
         .modify((queryBuilder) => {
           if (status !== "all") {
             queryBuilder.where("status", status);

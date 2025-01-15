@@ -1,4 +1,4 @@
-exports.up = function (knex) {
+export function up(knex) {
   return knex.schema.createTable("products", (table) => {
     table.increments("id").primary();
     table.string("title").notNullable();
@@ -7,8 +7,8 @@ exports.up = function (knex) {
     table.string("image_url");
     table.timestamps(true, true);
   });
-};
+}
 
-exports.down = function (knex) {
+export function down(knex) {
   return knex.schema.dropTableIfExists("products");
-};
+}

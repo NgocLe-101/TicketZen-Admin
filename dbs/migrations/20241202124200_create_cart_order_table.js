@@ -2,7 +2,7 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function (knex) {
+export function up(knex) {
   return knex.schema
     .createTable("cart_items", (table) => {
       table.increments("id").primary();
@@ -30,15 +30,15 @@ exports.up = function (knex) {
       table.foreign("order_id").references("orders.id").onDelete("CASCADE");
       table.foreign("movie_id").references("products.id").onDelete("CASCADE");
     });
-};
+}
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function (knex) {
+export function down(knex) {
   return knex.schema
     .dropTable("order_items")
     .dropTable("orders")
     .dropTable("cart_items");
-};
+}
