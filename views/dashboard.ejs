@@ -99,7 +99,7 @@
         include('./accounts/list', { accounts, pagination, filters }) %> <% }
         else if (activePage === 'products') {%> <%- include('./products/list', {
         products, genres, manufacturers, pagination, filters }) %> <% } else if
-        (activePage === 'categories') { %> <%- include('./categories/list', {
+        (activePage === 'categories') { %> <%- include('./Categories/list', {
         genres, manufacturers }) %> <% } else if (activePage === 'reports') { %>
         <%- include('./reports/revenue', { revenue, topMovies, range}) %> <% }
         else if (activePage === 'profile') { %> <%- include('./profile') %> <% }
