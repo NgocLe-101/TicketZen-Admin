@@ -20,7 +20,7 @@ class OrderModel {
         .groupBy("orders.id", "users.username", "products.title")
         .modify((queryBuilder) => {
           if (status !== "all") {
-            queryBuilder.where("status", status);
+            queryBuilder.where("orders.status", status);
           }
         });
 
